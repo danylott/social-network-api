@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Post
+from .models import Post, Like
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,3 +19,9 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'title', 'content', 'author')
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ('id', 'user', 'post', 'pub_date')

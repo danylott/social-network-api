@@ -8,11 +8,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import UserViewSet, PostViewSet
+from .views import UserViewSet, PostViewSet, LikeViewSet
 
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
 router.register('posts', PostViewSet)
+router.register('likes', LikeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
