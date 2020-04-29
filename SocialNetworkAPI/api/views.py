@@ -145,8 +145,8 @@ class AnalyticsViewSet(viewsets.ViewSet):
     def list(self, request):
         date_from = request.GET.get('date_from', None)
         date_to = request.GET.get('date_to', None)
-        date_to += ' 23:59:59'
         try:
+            date_to += ' 23:59:59'
             date_from = datetime.datetime.strptime(date_from, '%Y-%m-%d')
             date_to = datetime.datetime.strptime(date_to, '%Y-%m-%d %H:%M:%S')
         except:

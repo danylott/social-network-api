@@ -8,9 +8,9 @@ from .views import UserViewSet, PostViewSet, LikeViewSet, ProfileViewSet, Analyt
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
 router.register('posts', PostViewSet)
-router.register('likes', LikeViewSet)
+router.register('likes', LikeViewSet, basename='like')
 router.register('profiles', ProfileViewSet)
-router.register('analytics', AnalyticsViewSet)
+router.register('analytics', AnalyticsViewSet, basename='analytics')
 
 urlpatterns = [
     path('', include(router.urls)),
