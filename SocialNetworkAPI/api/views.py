@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import permissions
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
@@ -9,8 +9,10 @@ from django.contrib.auth.models import User
 from django_filters import rest_framework as filters
 from .permissions import IsOwnerOrReadOnly
 
-from .models import Post, Like
-from .serializers import UserSerializer, PostSerializer, LikeSerializer
+from .models import Post, Like, Profile
+from .serializers import UserSerializer, PostSerializer, LikeSerializer, ProfileSerializer
+
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -73,3 +75,38 @@ class LikeViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         response = {'message': 'You cant delete like like that'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+    permission_classes(IsAuthenticatedOrReadOnly)
+
+    def create(self, request, *args, **kwargs):
+        response = {'message': 'You cant create profile like that'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        response = {'message': 'You cant update profile like that'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        response = {'message': 'You cant delete profile like that'}
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class JWTAuthenticationView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):
+        result = super(JWTAuthenticationView, self).post(request)
+        try:
+            # request_user, data = requests.get_parameters(request)
+            # user = requests.get_user_by_username(data['username'])
+            # update_last_login(None, user)
+            print(request.data)
+            user = User.objects.get(username=request.data['username'])
+            Profile.objects.filter(user__id=user.id) \
+                .update(last_login=timezone.now())
+        except Exception as exc:
+            print(exc)
+        return result

@@ -34,7 +34,6 @@ class UpdateLastActivityMiddleware(object):
 
         # remove 'Bearer ' from token
         token = request.headers['Authorization'][7:]
-        print(token)
         user_jwt = AnonymousUser()
         if token is not None:
             try:
