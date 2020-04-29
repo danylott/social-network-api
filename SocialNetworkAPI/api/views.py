@@ -1,18 +1,24 @@
+import datetime
+
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
+from django.contrib.auth.models import User
+
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework import permissions
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from django_filters import rest_framework as filters
-from .permissions import IsOwnerOrReadOnly
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
+from django_filters import rest_framework as filters
+
+from .permissions import IsOwnerOrReadOnly
 from .models import Post, Like, Profile
 from .serializers import UserSerializer, PostSerializer, LikeSerializer, ProfileSerializer
 
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -110,3 +116,48 @@ class JWTAuthenticationView(TokenObtainPairView):
         except Exception as exc:
             print(exc)
         return result
+
+
+def create_analytics_from_likes(likes, date_from):
+    result = []
+    current_date = date_from.date()
+    current_likes_count = 0
+    for like in likes:
+        print(like.pub_date.date())
+        if like.pub_date.date() == current_date:
+            current_likes_count += 1
+        else:
+            if current_likes_count > 0:
+                result.append({str(current_date): current_likes_count})
+
+            current_likes_count = 1
+            current_date = like.pub_date.date()
+    if current_likes_count > 0:
+        result.append({str(current_date): current_likes_count})
+
+    return result
+
+
+class AnalyticsViewSet(viewsets.ViewSet):
+    queryset = Like.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def list(self, request):
+        date_from = request.GET.get('date_from', None)
+        date_to = request.GET.get('date_to', None)
+        date_to += ' 23:59:59'
+        try:
+            date_from = datetime.datetime.strptime(date_from, '%Y-%m-%d')
+            date_to = datetime.datetime.strptime(date_to, '%Y-%m-%d %H:%M:%S')
+        except:
+            response = {'message': 'Invalid date format or date is not provided'}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        likes = Like.objects.filter(
+            Q(pub_date__gte=date_from),
+            Q(pub_date__lte=date_to)
+        ).order_by('pub_date')
+
+        analytics_by_date = create_analytics_from_likes(likes, date_from)
+
+        return Response(analytics_by_date, status=status.HTTP_200_OK)

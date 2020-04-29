@@ -8,13 +8,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import UserViewSet, PostViewSet, LikeViewSet, ProfileViewSet, JWTAuthenticationView
+from .views import UserViewSet, PostViewSet, LikeViewSet, ProfileViewSet, JWTAuthenticationView, \
+    AnalyticsViewSet
 
 router = routers.DefaultRouter()
 router.register('users', UserViewSet)
 router.register('posts', PostViewSet)
 router.register('likes', LikeViewSet)
 router.register('profiles', ProfileViewSet)
+router.register('analytics', AnalyticsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
