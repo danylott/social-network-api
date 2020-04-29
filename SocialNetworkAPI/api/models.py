@@ -1,5 +1,3 @@
-import datetime
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -16,7 +14,7 @@ class Post(models.Model):
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
-    pub_date = models.DateField(default=datetime.date.today)
+    pub_date = models.DateTimeField(auto_now_add=True, blank=True)
 
     class Meta:
         unique_together = (('user', 'post'),)
@@ -24,3 +22,8 @@ class Like(models.Model):
 
     def __str__(self):
         return str(self.pub_date) + str(self.post) + str(self.user.username)
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    last_activity = models.DateTimeField(null=True, blank=True)

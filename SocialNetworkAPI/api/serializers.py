@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Post, Like
+from .models import Post, Like, Profile
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        Profile.objects.create(user=user)
         return user
 
 
