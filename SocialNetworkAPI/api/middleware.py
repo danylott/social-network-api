@@ -29,6 +29,9 @@ class UpdateLastActivityMiddleware(object):
         if user_jwt.is_authenticated:
             return user_jwt
 
+        if 'Authorization' not in request.headers:
+            return AnonymousUser()
+
         # remove 'Bearer ' from token
         token = request.headers['Authorization'][7:]
         print(token)

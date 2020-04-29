@@ -19,7 +19,16 @@ class UserSerializer(serializers.ModelSerializer):
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'author')
+        fields = ('id', 'title', 'content', 'author', 'number_of_likes')
+        extra_kwargs = {'author': {'read_only': True, 'required': False}}
+
+    def create(self, validated_data):
+        author = self.context['request'].user
+        post = Post.objects.create(
+            author=author,
+            **validated_data
+        )
+        return post
 
 
 class LikeSerializer(serializers.ModelSerializer):

@@ -7,6 +7,7 @@ from rest_framework import permissions
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django_filters import rest_framework as filters
+from .permissions import IsOwnerOrReadOnly
 
 from .models import Post, Like
 from .serializers import UserSerializer, PostSerializer, LikeSerializer
@@ -21,10 +22,10 @@ class UserViewSet(viewsets.ModelViewSet):
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
     @action(detail=True, methods=['POST'])
-    def like_post(self, request, pk=None):
+    def like(self, request, pk=None):
         post = Post.objects.get(id=pk)
         user = request.user
 
@@ -39,6 +40,21 @@ class PostViewSet(viewsets.ModelViewSet):
             serializer = LikeSerializer(like, many=False)
             response = {'message': 'Post have been liked!', 'result': serializer.data}
             return Response(response, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['POST'])
+    def unlike(self, request, pk=None):
+        post = Post.objects.get(id=pk)
+        user = request.user
+
+        try:
+            like = Like.objects.get(user=user, post=post)
+            like.delete()
+            response = {'message': 'Successfully unlike post'}
+            return Response(response, status=status.HTTP_200_OK)
+
+        except:
+            response = {'message': 'You have not liked this project yet!'}
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
 
 
 class LikeViewSet(viewsets.ModelViewSet):

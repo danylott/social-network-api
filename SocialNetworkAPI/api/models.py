@@ -10,6 +10,10 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+    def number_of_likes(self):
+        likes = Like.objects.filter(post=self)
+        return len(likes)
+
 
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=False, blank=False)
