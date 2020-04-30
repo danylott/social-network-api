@@ -1,5 +1,4 @@
 import requests
-import json
 import lorem
 import random
 
@@ -16,7 +15,7 @@ def signup_users():
         }
         r = requests.post(config.API_URL + 'api/users/', data=data)
 
-        response = json.loads(r.text)
+        response = r.json()
         if r.status_code == 201:  # created
             users.append(data)
 
@@ -33,7 +32,7 @@ def login_users(users):
     for user in users:
         r = requests.post(config.API_URL + 'login/', data=user)
 
-        response = json.loads(r.text)
+        response = r.json()
         if r.status_code == 200:  # OK
             tokens.append(response['access'])
 
@@ -60,7 +59,7 @@ def create_post_activity(tokens):
             }
             r = requests.post(config.API_URL + 'api/posts/', headers=headers, data=data)
 
-            response = json.loads(r.text)
+            response = r.json()
             if r.status_code == 201:  # created
                 posts_id.append(response['id'])
 
@@ -71,15 +70,38 @@ def create_post_activity(tokens):
     return posts_id
 
 
+def create_like_activity(tokens, posts_id):
+    for token in tokens:
+        headers = {
+            'Authorization': 'Bearer ' + token,
+        }
+
+        likes_count = random.randint(0, config.MAX_LIKES_PER_USER)
+        for i in range(likes_count):
+            like_or_unlike = random.randint(0, 5)
+            url = config.API_URL + 'api/posts/' + str(random.choice(posts_id)) + '/'
+
+            if like_or_unlike < 3:
+                r = requests.post(url + 'like/', headers=headers)
+
+            else:
+                r = requests.post(url + 'unlike/', headers=headers)
+
+            # response = r.json()
+            # print(response)
+
+
 if __name__ == "__main__":
     registered_users = signup_users()
     print(registered_users)
 
-    access_tokens = login_users(registered_users)
+    access_tokens = login_users(users=registered_users)
     print(access_tokens)
 
-    created_posts_id = create_post_activity(access_tokens)
+    created_posts_id = create_post_activity(tokens=access_tokens)
     print(created_posts_id)
+
+    create_like_activity(tokens=access_tokens, posts_id=created_posts_id)
 
 
 
