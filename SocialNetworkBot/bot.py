@@ -29,9 +29,29 @@ def signup_users():
     return users
 
 
+def login_users(users):
+    tokens = []
+
+    for user in users:
+        r = requests.post(api_url + 'login/', user)
+
+        response = json.loads(r.text)
+        if r.status_code == 200:  # OK
+            tokens.append(response['access'])
+
+        else:
+            print("There was a problem during login users")
+            print(response)
+
+    return tokens
+
+
 if __name__ == "__main__":
     registered_users = signup_users()
     print(registered_users)
+
+    access_tokens = login_users(registered_users)
+    print(access_tokens)
 
 
 
