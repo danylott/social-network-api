@@ -37,7 +37,7 @@ class PostViewSet(viewsets.ModelViewSet):
             like = Like.objects.get(user=user, post=post)
             serializer = LikeSerializer(like, many=False)
             response = {'message': 'You have already liked this post', 'result': serializer.data}
-            return Response(response, status=status.HTTP_304_NOT_MODIFIED)
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         except:
             like = Like.objects.create(user=user, post=post)
@@ -58,7 +58,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         except:
             response = {'message': 'You have not liked this project yet!'}
-            return Response(response, status=status.HTTP_404_NOT_FOUND)
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LikeViewSet(viewsets.ModelViewSet):
@@ -102,10 +102,6 @@ class JWTAuthenticationView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         result = super(JWTAuthenticationView, self).post(request)
         try:
-            # request_user, data = requests.get_parameters(request)
-            # user = requests.get_user_by_username(data['username'])
-            # update_last_login(None, user)
-            print(request.data)
             user = User.objects.get(username=request.data['username'])
             Profile.objects.filter(user__id=user.id) \
                 .update(last_login=timezone.now())
@@ -119,7 +115,6 @@ def create_analytics_from_likes(likes, date_from):
     current_date = date_from.date()
     current_likes_count = 0
     for like in likes:
-        print(like.pub_date.date())
         if like.pub_date.date() == current_date:
             current_likes_count += 1
         else:
